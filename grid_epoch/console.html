@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>衍枢值班台</title>
+<style>
+  :root {
+    --steel: #17323a;
+    --steel-2: #244650;
+    --sheet: #dfe8e4;
+    --card: #f3f7f5;
+    --ink: #1b2c2a;
+    --muted: #5d726d;
+    --line: #c3d2cc;
+    --amber: #e3a008;
+    --good: #1f7a62;
+    --fault: #b6402c;
+    --focus: #0b6e8a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--sheet);
+    color: var(--ink);
+    font-family: "Avenir Next", "PingFang SC", "Noto Sans SC", sans-serif;
+    line-height: 1.45;
+  }
+  .bus {
+    background: linear-gradient(180deg, var(--steel-2), var(--steel));
+    color: #edf4f1;
+    padding: 22px 28px 18px;
+  }
+  .bus-kicker {
+    font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+    letter-spacing: 0.18em;
+    font-size: 13px;
+    color: #b7c9c3;
+  }
+  .bus-row {
+    display: flex;
+    gap: 28px;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .epoch {
+    font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+    font-size: 64px;
+    line-height: 0.9;
+    font-weight: 600;
+  }
+  .epoch span {
+    display: block;
+    margin-top: 6px;
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: #b7c9c3;
+    font-weight: 500;
+  }
+  .lamps { display: flex; gap: 12px; flex-wrap: wrap; flex: 1 1 420px; min-width: 0; }
+  .lamp {
+    flex: 1 1 200px;
+    min-width: 0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(227, 160, 8, 0.35);
+    padding: 10px 12px 12px;
+  }
+  .lamp b { display: block; font-size: 14px; font-weight: 600; }
+  .lamp i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #6d7f7a; margin-right: 6px; }
+  .lamp.ok i { background: var(--good); box-shadow: 0 0 0 3px rgba(31,122,98,0.25); }
+  .lamp.bad i { background: var(--fault); }
+  .lamp small { display: block; margin-top: 6px; color: #d5e2dc; font-variant-numeric: tabular-nums; }
+  main { padding: 22px 28px 40px; display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 18px; }
+  section { background: var(--card); border: 1px solid var(--line); padding: 16px 16px 18px; }
+  h2 { margin: 0 0 12px; font-size: 16px; font-weight: 650; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  .pager { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  button, input {
+    font: inherit;
+    color: var(--ink);
+  }
+  button {
+    background: var(--steel);
+    color: #f4faf7;
+    border: 0;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  button.secondary { background: transparent; color: var(--steel); border: 1px solid var(--steel); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  input { width: 100%; border: 1px solid var(--line); background: white; padding: 8px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .note { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+  .bench { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .result { margin-top: 12px; font-size: 14px; white-space: pre-wrap; }
+  .audit { grid-column: 1 / -1; }
+  .audit li { font-size: 14px; margin: 4px 0; }
+  @media (max-width: 800px) {
+    main { grid-template-columns: 1fr; padding: 16px; }
+    .epoch { font-size: 48px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lamp.ok i { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<header class="bus">
+  <div class="bus-kicker">省级配电 · 衍枢值班台</div>
+  <div class="bus-row">
+    <div class="epoch" id="epoch">–<span id="behind">尚未发布</span></div>
+    <div class="lamps" id="lamps"></div>
+  </div>
+</header>
+<main>
+  <section>
+    <h2>台区</h2>
+    <table>
+      <thead><tr><th>台区</th><th>在册</th><th>已确认</th><th>已吊销</th><th>已销毁</th><th>报文</th></tr></thead>
+      <tbody id="zones"></tbody>
+    </table>
+    <p class="note">已确认来自业务标签重算。报文未下发只说明这个台区还没收到纪元广播。观察名单只记这些台区，不表示确认失败。</p>
+    <h2 id="member-title">本台区终端</h2>
+    <table>
+      <thead><tr><th>序号</th><th>叶子</th><th>状态</th></tr></thead>
+      <tbody id="members"></tbody>
+    </table>
+    <div class="pager">
+      <button class="secondary" id="prev" type="button">上一页</button>
+      <span id="page-label"></span>
+      <button class="secondary" id="next" type="button">下一页</button>
+    </div>
+  </section>
+  <section>
+    <h2>一台终端</h2>
+    <label for="zone">台区号</label>
+    <input id="zone" inputmode="numeric" value="42">
+    <label for="local">序号</label>
+    <input id="local" inputmode="numeric" value="0">
+    <div class="actions">
+      <button type="button" id="lookup">查询</button>
+      <button type="button" id="publish">发布纪元</button>
+    </div>
+    <label for="pw-a">口令甲</label>
+    <input id="pw-a" type="password" autocomplete="off">
+    <label for="pw-b">口令乙</label>
+    <input id="pw-b" type="password" autocomplete="off">
+    <label for="epoch-no">纪元号</label>
+    <input id="epoch-no" inputmode="numeric">
+    <div class="actions">
+      <button class="secondary" type="button" id="restore">核对两份口令</button>
+      <button class="secondary" type="button" id="recover-epoch">恢复纪元托管</button>
+    </div>
+    <div class="actions">
+      <button class="secondary" type="button" id="revoke">吊销</button>
+      <button class="secondary" type="button" id="replace">换表</button>
+      <button class="secondary" type="button" id="transfer">割接</button>
+      <button class="secondary" type="button" id="drop">丢弃过期随机数</button>
+      <button class="secondary" type="button" id="gateway">吊销网关</button>
+      <button class="secondary" type="button" id="reprovision">重新灌装</button>
+      <button class="secondary" type="button" id="enroll">接入核验</button>
+      <button class="secondary" type="button" id="watch">记入观察</button>
+      <button class="secondary" type="button" id="destroy">销毁档案</button>
+      <button class="secondary" type="button" id="archive">归档审计</button>
+      <button class="secondary" type="button" id="recall">召回固件</button>
+    </div>
+    <label for="new-local">新序号</label>
+    <input id="new-local" inputmode="numeric" value="4">
+    <label for="new-zone">新台区</label>
+    <input id="new-zone" inputmode="numeric" value="45">
+    <label for="firmware">固件版本</label>
+    <input id="firmware" inputmode="numeric" placeholder="版本">
+    <label for="withhold">扣下序号</label>
+    <input id="withhold" inputmode="numeric" placeholder="留空表示这个台区全部到齐">
+    <div class="actions">
+      <button class="secondary" type="button" id="confirm">核对确认</button>
+    </div>
+    <div class="result" id="result"></div>
+  </section>
+  <section class="audit">
+    <h2>审计</h2>
+    <ul id="audit"></ul>
+  </section>
+  <p class="bench" id="bench"></p>
+</main>
+<script>
+const state = { page: 0, total: 0, size: 2 };
+const lamps = document.getElementById("lamps");
+const names = [["terminal", "终端报文"], ["gateway", "网关报文"], ["revocation", "吊销根"]];
+
+function lamp(name, item) {
+  if (!item) return `<div class="lamp"><b>${name}</b><small>还没有这一份</small></div>`;
+  const ok = item.sm2;
+  return `<div class="lamp ${ok ? "ok" : "bad"}"><b><i></i>${name}</b><small>${item.bytes} 字节 · SM2 ${item.sm2 ? "通过" : "失败"}</small></div>`;
+}
+
+async function api(path, options) {
+  const response = await fetch(path, options);
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error || "操作没有完成");
+  return body;
+}
+
+async function refresh() {
+  const status = await api("/api/status");
+  document.getElementById("epoch").firstChild.textContent = status.epoch;
+  const delivery = status.epoch === 0
+    ? "尚未发布"
+    : `报文未下发 ${status.behind_zones} 个台区 · 不是确认失败 · 吊销版本 ${status.rev_version}`;
+  document.getElementById("behind").textContent = delivery;
+  const cover = `<div class="lamp"><b>${status.cover}</b><small>当前吊销集的覆盖</small></div>`;
+  lamps.innerHTML = cover + names.map(([key, label]) => lamp(label, status.packages && status.packages[key])).join("");
+  const bench = status.bench;
+  document.getElementById("bench").textContent = bench
+    ? `本机吞吐，不是端到端时延。报文 ${bench.terminal} / ${bench.gateway} / ${bench.revocation} 字节。完成帧 ${bench.confirm_bytes} 字节。100 万台确认重算 ${bench.confirm_seconds} 秒。`
+    : "";
+  const zones = await api(`/api/zones?page=${state.page}`);
+  state.total = zones.total;
+  state.size = zones.size;
+  document.getElementById("zones").innerHTML = zones.zones.map((row) =>
+    `<tr><td>${row.zone}</td><td>${row.enrolled}</td><td>${row.acked}</td><td>${row.revoked}</td><td>${row.destroyed}</td><td>${row.behind ? "未下发" : "已收到"}</td></tr>`
+  ).join("");
+  const pages = Math.max(1, Math.ceil(state.total / state.size));
+  document.getElementById("page-label").textContent = `${state.page + 1} / ${pages}`;
+  const zone = Number(document.getElementById("zone").value);
+  const members = await api(`/api/members?zone=${zone}`);
+  document.getElementById("member-title").textContent = `台区 ${zone} 的终端`;
+  document.getElementById("members").innerHTML = members.map((row) =>
+    `<tr><td>${row.local}</td><td>${row.leaf}</td><td>${row.state}</td></tr>`
+  ).join("");
+  const audit = await api("/api/audit");
+  state.auditIds = audit.map((row) => row.id);
+  document.getElementById("audit").innerHTML = audit.map((row) => `<li>${row.action} · ${row.detail}</li>`).join("");
+  const epochNo = document.getElementById("epoch-no");
+  if (document.activeElement !== epochNo && status.epoch > 0) {
+    epochNo.value = String(status.epoch);
+  }
+}
+
+function target() {
+  return { zone: Number(document.getElementById("zone").value), local_index: Number(document.getElementById("local").value) };
+}
+
+async function run(path, extra, summarize) {
+  const result = document.getElementById("result");
+  try {
+    const body = await api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...target(), ...extra }) });
+    result.textContent = summarize(body);
+    await refresh();
+  } catch (error) {
+    result.textContent = error.message;
+  }
+}
+
+document.getElementById("lookup").onclick = () => run("/api/lookup", {}, (body) => {
+  const stateText = body.released ? "已回收" : body.destroyed ? "已销毁" : body.revoked ? "已吊销" : "在册";
+  return `台区 ${body.zone} 序号 ${body.local_index}，叶子 ${body.leaf}，${stateText}`;
+});
+document.getElementById("publish").onclick = () => run("/api/publish", {
+  password_a: document.getElementById("pw-a").value,
+  password_b: document.getElementById("pw-b").value,
+}, (body) => `已发布纪元 ${body.epoch}`);
+document.getElementById("revoke").onclick = () => run("/api/revoke", {}, (body) => `已吊销台区 ${body.zone} 序号 ${body.local_index}`);
+document.getElementById("replace").onclick = () => run("/api/replace", {
+  new_local: Number(document.getElementById("new-local").value),
+}, (body) => `已换到序号 ${body.local_index}，叶子 ${body.leaf}`);
+document.getElementById("transfer").onclick = () => run("/api/transfer", {
+  new_zone: Number(document.getElementById("new-zone").value),
+  new_local: Number(document.getElementById("new-local").value),
+}, (body) => `已割接到台区 ${body.zone} 序号 ${body.local_index}`);
+document.getElementById("drop").onclick = () => run("/api/drop-expired", {}, (body) => `已丢弃纪元 ${body.epoch} 之前的随机数`);
+document.getElementById("gateway").onclick = () => run("/api/revoke-gateway", {}, (body) => `已吊销台区 ${body.zone} 的网关`);
+document.getElementById("reprovision").onclick = () => run("/api/reprovision", {}, (body) => `已重新灌装台区 ${body.zone} 序号 ${body.local_index}`);
+document.getElementById("enroll").onclick = () => run("/api/enroll-check", {}, () => "接入签名核对通过");
+document.getElementById("confirm").onclick = () => {
+  const raw = document.getElementById("withhold").value.trim();
+  const extra = raw === "" ? {} : { withhold: Number(raw) };
+  run("/api/confirm", extra, (body) => {
+    if (body.audit_ok && !body.rejected) return `台区 ${body.zone} 已确认 ${body.count} 台，完成帧 ${body.bytes} 字节，审计根已核对`;
+    if (!body.audit_ok) return "完成签名未通过，完成帧未接受";
+    return `完成帧被拒绝。明细缺序号 ${body.missing.join("、")}。已确认 ${body.count} 台。已吊销仍为 ${body.revoked}。`;
+  });
+};
+document.getElementById("watch").onclick = () => run("/api/watch", {}, (body) =>
+  body.zones.length
+    ? `观察名单：台区 ${body.zones.join("、")}。还没收到这一纪元的报文，不参与验签，也不是确认失败`
+    : "观察名单为空。没有尚未收到报文的台区"
+);
+document.getElementById("restore").onclick = () => run("/api/restore", {
+  password_a: document.getElementById("pw-a").value,
+  password_b: document.getElementById("pw-b").value,
+}, () => "两份口令核对通过");
+document.getElementById("recover-epoch").onclick = () => {
+  const raw = document.getElementById("epoch-no").value.trim();
+  const epoch = Number(raw);
+  if (raw === "" || !Number.isInteger(epoch) || epoch < 1) {
+    document.getElementById("result").textContent = "请填写要打开的纪元";
+    return;
+  }
+  run("/api/recover-epoch", {
+    epoch,
+    password_a: document.getElementById("pw-a").value,
+    password_b: document.getElementById("pw-b").value,
+  }, (body) => `纪元 ${body.epoch} 的托管包已打开`);
+};
+document.getElementById("destroy").onclick = () => run("/api/destroy", {}, (body) =>
+  `台区 ${body.zone} 序号 ${body.local_index} 的档案已销毁，叶子 ${body.leaf} 保留`
+);
+document.getElementById("archive").onclick = () => {
+  const ids = state.auditIds || [];
+  if (ids.length < 2) {
+    document.getElementById("result").textContent = "没有更早的审计";
+    return;
+  }
+  run("/api/archive-audit", { before_id: Math.max(...ids) }, (body) =>
+    `已归档 ${body.moved} 条更早的审计`
+  );
+};
+document.getElementById("recall").onclick = () => {
+  const raw = document.getElementById("firmware").value.trim();
+  const version = Number(raw);
+  if (raw === "" || !Number.isInteger(version) || version < 1) {
+    document.getElementById("result").textContent = "请填写要召回的固件版本";
+    return;
+  }
+  run("/api/recall-firmware", { version }, (body) =>
+    `版本 ${body.version} 摘掉 ${body.batches} 个批次，覆盖 ${body.subsets} 条`
+  );
+};
+document.getElementById("prev").onclick = async () => { if (state.page > 0) { state.page -= 1; await refresh(); } };
+document.getElementById("next").onclick = async () => {
+  if ((state.page + 1) * state.size < state.total) { state.page += 1; await refresh(); }
+};
+document.getElementById("zone").addEventListener("change", () => { refresh().catch((error) => { document.getElementById("result").textContent = error.message; }); });
+refresh().catch((error) => { document.getElementById("result").textContent = error.message; });
+</script>
+</body>
+</html>
