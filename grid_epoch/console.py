@@ -53,7 +53,17 @@ def serve(directory: str | Path, host: str = "127.0.0.1", port: int = 8765) -> N
             if path == "/api/zones":
                 query = parse_qs(urlparse(self.path).query)
                 page = int(query.get("page", ["0"])[0])
-                self._json(desk.zones(page))
+                raw_size = query.get("size", ["2"])[0]
+                try:
+                    size = int(raw_size)
+                except ValueError:
+                    size = 2
+                else:
+                    if size < 1:
+                        size = 1
+                    elif size > 8:
+                        size = 8
+                self._json(desk.zones(page, size))
                 return
             if path == "/api/members":
                 query = parse_qs(urlparse(self.path).query)

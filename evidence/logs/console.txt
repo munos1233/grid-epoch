@@ -1,0 +1,2 @@
+.venv/bin/python -m grid_epoch.console
+值班台 http://127.0.0.1:8765

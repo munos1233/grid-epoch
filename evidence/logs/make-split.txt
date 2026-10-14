@@ -1,0 +1,4 @@
+.venv/bin/python -m grid_epoch.split_demo
+步骤1 漏掉纪元 1 后进入纪元 2
+步骤2 吊销后 TerminalRevoked
+步骤3 新表进入纪元 4，旧表 TerminalRevoked，漏收过纪元的邻表进入 4

@@ -98,7 +98,15 @@
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .note { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
   .bench { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
-  .result { margin-top: 12px; font-size: 14px; white-space: pre-wrap; }
+  .result {
+    margin-top: 14px;
+    font-size: 22px;
+    line-height: 1.45;
+    color: #f4faf7;
+    white-space: pre-wrap;
+    min-height: 1.45em;
+  }
+  .result.fault { border-left: 4px solid var(--fault); padding-left: 12px; }
   .audit { grid-column: 1 / -1; }
   .audit li { font-size: 14px; margin: 4px 0; }
   @media (max-width: 800px) {
@@ -117,6 +125,7 @@
     <div class="epoch" id="epoch">–<span id="behind">尚未发布</span></div>
     <div class="lamps" id="lamps"></div>
   </div>
+  <div class="result" id="result">尚无操作</div>
 </header>
 <main>
   <section>
@@ -126,16 +135,17 @@
       <tbody id="zones"></tbody>
     </table>
     <p class="note">已确认来自业务标签重算。报文未下发只说明这个台区还没收到纪元广播。观察名单只记这些台区，不表示确认失败。</p>
+    <div class="pager">
+      <button class="secondary" id="prev" type="button">上一页</button>
+      <span>台区</span>
+      <span id="page-label"></span>
+      <button class="secondary" id="next" type="button">下一页</button>
+    </div>
     <h2 id="member-title">本台区终端</h2>
     <table>
       <thead><tr><th>序号</th><th>叶子</th><th>状态</th></tr></thead>
       <tbody id="members"></tbody>
     </table>
-    <div class="pager">
-      <button class="secondary" id="prev" type="button">上一页</button>
-      <span id="page-label"></span>
-      <button class="secondary" id="next" type="button">下一页</button>
-    </div>
   </section>
   <section>
     <h2>一台终端</h2>
@@ -181,7 +191,6 @@
     <div class="actions">
       <button class="secondary" type="button" id="confirm">核对确认</button>
     </div>
-    <div class="result" id="result"></div>
   </section>
   <section class="audit">
     <h2>审计</h2>
@@ -197,7 +206,17 @@ const names = [["terminal", "终端报文"], ["gateway", "网关报文"], ["revo
 function lamp(name, item) {
   if (!item) return `<div class="lamp"><b>${name}</b><small>还没有这一份</small></div>`;
   const ok = item.sm2;
-  return `<div class="lamp ${ok ? "ok" : "bad"}"><b><i></i>${name}</b><small>${item.bytes} 字节 · SM2 ${item.sm2 ? "通过" : "失败"}</small></div>`;
+  return `<div class="lamp ${ok ? "ok" : "bad"}"><b><i></i>${name}</b><small>最近一次发布 · ${item.bytes} 字节 · SM2 ${ok ? "通过" : "失败"}</small></div>`;
+}
+
+function shownEpoch() {
+  return document.getElementById("epoch").firstChild.textContent.trim();
+}
+
+function writeResult(text, failed) {
+  const result = document.getElementById("result");
+  result.textContent = text;
+  result.classList.toggle("fault", Boolean(failed));
 }
 
 async function api(path, options) {
@@ -220,7 +239,7 @@ async function refresh() {
   document.getElementById("bench").textContent = bench
     ? `本机吞吐，不是端到端时延。报文 ${bench.terminal} / ${bench.gateway} / ${bench.revocation} 字节。完成帧 ${bench.confirm_bytes} 字节。100 万台确认重算 ${bench.confirm_seconds} 秒。`
     : "";
-  const zones = await api(`/api/zones?page=${state.page}`);
+  const zones = await api(`/api/zones?page=${state.page}&size=8`);
   state.total = zones.total;
   state.size = zones.size;
   document.getElementById("zones").innerHTML = zones.zones.map((row) =>
@@ -251,10 +270,12 @@ async function run(path, extra, summarize) {
   const result = document.getElementById("result");
   try {
     const body = await api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...target(), ...extra }) });
+    result.classList.remove("fault");
     result.textContent = summarize(body);
     await refresh();
   } catch (error) {
     result.textContent = error.message;
+    result.classList.add("fault");
   }
 }
 
@@ -269,15 +290,25 @@ document.getElementById("publish").onclick = () => run("/api/publish", {
 document.getElementById("revoke").onclick = () => run("/api/revoke", {}, (body) => `已吊销台区 ${body.zone} 序号 ${body.local_index}`);
 document.getElementById("replace").onclick = () => run("/api/replace", {
   new_local: Number(document.getElementById("new-local").value),
-}, (body) => `已换到序号 ${body.local_index}，叶子 ${body.leaf}`);
+}, (body) => {
+  document.getElementById("local").value = String(body.local_index);
+  return `已换到序号 ${body.local_index}，叶子 ${body.leaf}。旧序号已吊销`;
+});
 document.getElementById("transfer").onclick = () => run("/api/transfer", {
   new_zone: Number(document.getElementById("new-zone").value),
   new_local: Number(document.getElementById("new-local").value),
-}, (body) => `已割接到台区 ${body.zone} 序号 ${body.local_index}`);
-document.getElementById("drop").onclick = () => run("/api/drop-expired", {}, (body) => `已丢弃纪元 ${body.epoch} 之前的随机数`);
-document.getElementById("gateway").onclick = () => run("/api/revoke-gateway", {}, (body) => `已吊销台区 ${body.zone} 的网关`);
-document.getElementById("reprovision").onclick = () => run("/api/reprovision", {}, (body) => `已重新灌装台区 ${body.zone} 序号 ${body.local_index}`);
-document.getElementById("enroll").onclick = () => run("/api/enroll-check", {}, () => "接入签名核对通过");
+}, (body) => {
+  document.getElementById("zone").value = String(body.zone);
+  document.getElementById("local").value = String(body.local_index);
+  return `已割接到台区 ${body.zone} 序号 ${body.local_index}`;
+});
+document.getElementById("drop").onclick = () => run("/api/drop-expired", {}, () => {
+  const epoch = shownEpoch();
+  return `已丢弃纪元 ${epoch} 之前的随机数，当前纪元仍为 ${epoch}`;
+});
+document.getElementById("gateway").onclick = () => run("/api/revoke-gateway", {}, (body) => `已吊销台区 ${body.zone} 的网关，管控密钥未轮换`);
+document.getElementById("reprovision").onclick = () => run("/api/reprovision", {}, (body) => `已重新灌装台区 ${body.zone} 序号 ${body.local_index}，管理种子与原先一致`);
+document.getElementById("enroll").onclick = () => run("/api/enroll-check", {}, () => `接入签名核对通过，纪元仍为 ${shownEpoch()}`);
 document.getElementById("confirm").onclick = () => {
   const raw = document.getElementById("withhold").value.trim();
   const extra = raw === "" ? {} : { withhold: Number(raw) };
@@ -300,14 +331,14 @@ document.getElementById("recover-epoch").onclick = () => {
   const raw = document.getElementById("epoch-no").value.trim();
   const epoch = Number(raw);
   if (raw === "" || !Number.isInteger(epoch) || epoch < 1) {
-    document.getElementById("result").textContent = "请填写要打开的纪元";
+    writeResult("请填写要打开的纪元", true);
     return;
   }
   run("/api/recover-epoch", {
     epoch,
     password_a: document.getElementById("pw-a").value,
     password_b: document.getElementById("pw-b").value,
-  }, (body) => `纪元 ${body.epoch} 的托管包已打开`);
+  }, () => `纪元 ${shownEpoch()} 的托管包已打开，随机数未显示`);
 };
 document.getElementById("destroy").onclick = () => run("/api/destroy", {}, (body) =>
   `台区 ${body.zone} 序号 ${body.local_index} 的档案已销毁，叶子 ${body.leaf} 保留`
@@ -315,7 +346,7 @@ document.getElementById("destroy").onclick = () => run("/api/destroy", {}, (body
 document.getElementById("archive").onclick = () => {
   const ids = state.auditIds || [];
   if (ids.length < 2) {
-    document.getElementById("result").textContent = "没有更早的审计";
+    writeResult("没有更早的审计", true);
     return;
   }
   run("/api/archive-audit", { before_id: Math.max(...ids) }, (body) =>
@@ -326,7 +357,7 @@ document.getElementById("recall").onclick = () => {
   const raw = document.getElementById("firmware").value.trim();
   const version = Number(raw);
   if (raw === "" || !Number.isInteger(version) || version < 1) {
-    document.getElementById("result").textContent = "请填写要召回的固件版本";
+    writeResult("请填写要召回的固件版本", true);
     return;
   }
   run("/api/recall-firmware", { version }, (body) =>
@@ -337,8 +368,8 @@ document.getElementById("prev").onclick = async () => { if (state.page > 0) { st
 document.getElementById("next").onclick = async () => {
   if ((state.page + 1) * state.size < state.total) { state.page += 1; await refresh(); }
 };
-document.getElementById("zone").addEventListener("change", () => { refresh().catch((error) => { document.getElementById("result").textContent = error.message; }); });
-refresh().catch((error) => { document.getElementById("result").textContent = error.message; });
+document.getElementById("zone").addEventListener("change", () => { refresh().catch((error) => { writeResult(error.message, true); }); });
+refresh().catch((error) => { writeResult(error.message, true); });
 </script>
 </body>
 </html>

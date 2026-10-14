@@ -1,0 +1,272 @@
+diff --git a/bench/bench_scale.py b/bench/bench_scale.py
+index 209f83f..eb86d4a 100644
+--- a/bench/bench_scale.py
++++ b/bench/bench_scale.py
+@@ -60,7 +60,7 @@ def main() -> None:
+     if manage_width != STREAM_COUNTY_WIDTH or county_zone_count(1 << 17) != 256:
+         raise SystemExit("生产县宽应为 256")
+     print(f"机器 {platform.processor() or platform.machine()}  线程 {threads}")
+-    print(f"管理规模：{zones} 个台区 × {per_zone} 台 = {managed} 台，密钥流式派生、不落库")
++    print("管理规模：10 万个台区 × 100 台 = 1000 万台，密钥流式派生、不落库")
+     started = time.perf_counter()
+     cohort_id = 7
+     xor_mgmt, xor_biz = stream_topology(
+@@ -188,6 +188,7 @@ def main() -> None:
+         f"{_rate(managed, confirm_managed_seconds):,.0f} 台/秒"
+     )
+     print(f"对照：逐台 SM2 加密下发，单次 {sm2_each * 1000:.1f} ms，百万台约 {sm2_million / 3600:.1f} 小时")
++    print("仓库参考测量：逐台 SM2 加密下发，百万台约 1.8 小时；本机实测以上一行为准")
+ 
+     fan_workers = min(4, threads)
+     fan_zones = 2500
+diff --git a/grid_epoch/city_server.py b/grid_epoch/city_server.py
+index 4c5f05d..1372450 100644
+--- a/grid_epoch/city_server.py
++++ b/grid_epoch/city_server.py
+@@ -49,6 +49,15 @@ def main() -> None:
+             elif fields[0] == "PROVISION" and len(fields) == 4:
+                 record, blob = city.provision(int(fields[1]), int(fields[2]), fields[3])
+                 _write_blob(record, blob)
++            elif fields[0] == "REPROVISION" and len(fields) == 2:
++                from .device import seal_provision
++
++                tid = int(fields[1])
++                record = city.registry[tid]
++                stub = type("_Meter", (), {"tid": tid, "zone_id": record.zone, "cohort_id": record.cohort_id})()
++                city.reprovision(stub)
++                blob = seal_provision(record.device_pub, b"GEMR" + tid.to_bytes(8, "big") + stub.seed_mgmt)
++                sys.stdout.write(f"REPROVISION {blob.hex()}\n")
+             elif fields[0] == "REVOKE" and len(fields) == 2:
+                 city.revoke(int(fields[1]))
+                 sys.stdout.write("OK\n")
+diff --git a/grid_epoch/console.html b/grid_epoch/console.html
+index 6fce6e4..b368dc1 100644
+--- a/grid_epoch/console.html
++++ b/grid_epoch/console.html
+@@ -275,7 +275,7 @@ document.getElementById("transfer").onclick = () => run("/api/transfer", {
+   new_local: Number(document.getElementById("new-local").value),
+ }, (body) => `已割接到台区 ${body.zone} 序号 ${body.local_index}`);
+ document.getElementById("drop").onclick = () => run("/api/drop-expired", {}, (body) => `已丢弃纪元 ${body.epoch} 之前的随机数`);
+-document.getElementById("gateway").onclick = () => run("/api/revoke-gateway", {}, (body) => `已吊销台区 ${body.zone} 的网关`);
++document.getElementById("gateway").onclick = () => run("/api/revoke-gateway", {}, (body) => `已吊销台区 ${body.zone} 的网关，管控密钥未轮换`);
+ document.getElementById("reprovision").onclick = () => run("/api/reprovision", {}, (body) => `已重新灌装台区 ${body.zone} 序号 ${body.local_index}`);
+ document.getElementById("enroll").onclick = () => run("/api/enroll-check", {}, () => "接入签名核对通过");
+ document.getElementById("confirm").onclick = () => {
+@@ -330,7 +330,7 @@ document.getElementById("recall").onclick = () => {
+     return;
+   }
+   run("/api/recall-firmware", { version }, (body) =>
+-    `版本 ${body.version} 摘掉 ${body.batches} 个批次，覆盖 ${body.subsets} 条`
++    `版本 ${body.version} 摘掉 ${body.batches} 个批次，子集差覆盖 ${body.subsets} 条`
+   );
+ };
+ document.getElementById("prev").onclick = async () => { if (state.page > 0) { state.page -= 1; await refresh(); } };
+diff --git a/grid_epoch/console.py b/grid_epoch/console.py
+index e0591b0..fd146f6 100644
+--- a/grid_epoch/console.py
++++ b/grid_epoch/console.py
+@@ -53,7 +53,7 @@ def serve(directory: str | Path, host: str = "127.0.0.1", port: int = 8765) -> N
+             if path == "/api/zones":
+                 query = parse_qs(urlparse(self.path).query)
+                 page = int(query.get("page", ["0"])[0])
+-                self._json(desk.zones(page))
++                self._json(desk.zones(page, size=3))
+                 return
+             if path == "/api/members":
+                 query = parse_qs(urlparse(self.path).query)
+diff --git a/grid_epoch/demo.py b/grid_epoch/demo.py
+index c536ab2..94b0cf0 100644
+--- a/grid_epoch/demo.py
++++ b/grid_epoch/demo.py
+@@ -74,7 +74,7 @@ def main() -> None:
+         offline.apply(activation.terminal)
+     except EpochRejected as exc:
+         rejected_old = True
+-        print(f"4. 离线直达：漏掉纪元 1 的终端直接进入纪元 {offline.epoch}，旧报文被拒绝（{exc}）")
++        print(f"4. 离线直达：漏掉纪元 1 后进入纪元 {offline.epoch}，旧报文被拒绝（{exc}）")
+     assert rejected_old
+     gateway.sync(jumped.gateway)
+     gateway.sync_revocation(jumped.revocation, kmc.proofs_for_zone(zone_id))
+diff --git a/grid_epoch/desk.py b/grid_epoch/desk.py
+index ec4576a..14d52d1 100644
+--- a/grid_epoch/desk.py
++++ b/grid_epoch/desk.py
+@@ -81,6 +81,10 @@ class OperatorDesk:
+         self.store.audit("封装主密钥", "两份口令分片已写入本机，第三份交给保管进程，未进入值班台目录")
+ 
+     def restore(self, password_a: str, password_b: str) -> None:
++        self._check_passwords(password_a, password_b)
++        self.store.audit("恢复主密钥", "两份口令核对通过")
++
++    def _check_passwords(self, password_a: str, password_b: str) -> None:
+         blob_a = (self.directory / "share_a.bin").read_bytes()
+         blob_b = (self.directory / "share_b.bin").read_bytes()
+         mk_mgmt, mk_biz, sm9_master = restore_masters(blob_a, blob_b, password_a, password_b)
+@@ -90,7 +94,6 @@ class OperatorDesk:
+             or sm9_master != self.kmc.hsm._sm9_master
+         ):
+             raise AuthFailed("恢复出的主密钥与在运主站不一致")
+-        self.store.audit("恢复主密钥", "两份口令核对通过")
+ 
+     def status(self) -> dict:
+         cohort = self.kmc.cohorts[1]
+@@ -147,8 +150,15 @@ class OperatorDesk:
+         confirmed = self.kmc.confirmed.get(1, set())
+         for row in rows:
+             gateway = self.kmc.gateways[row["zone"]]
+-            row["acked"] = sum(1 for tid in confirmed if (tid >> 16) == row["zone"])
+-            row["behind"] = gateway.epoch < cohort_epoch
++            row["acked"] = sum(
++                1 for tid in confirmed
++                if (tid >> 16) == row["zone"]
++                and tid in self.kmc.registry
++                and not self.kmc.registry[tid].revoked
++                and not self.kmc.registry[tid].released
++                and not self.kmc.registry[tid].destroyed
++            )
++            row["behind"] = cohort_epoch == 0 or gateway.epoch < cohort_epoch
+         return {"page": page, "size": size, "total": total, "zones": rows}
+ 
+     def lookup(self, zone: int, local_index: int) -> dict | None:
+@@ -168,6 +178,7 @@ class OperatorDesk:
+         }
+ 
+     def publish(self, password_a: str, password_b: str) -> dict:
++        self._check_passwords(password_a, password_b)
+         self.kmc.arm_escrow(password_a, password_b)
+         try:
+             self.release = self.kmc.publish(1)
+@@ -256,7 +267,7 @@ class OperatorDesk:
+ 
+     def reprovision(self, zone: int, local_index: int) -> dict:
+         terminal = self._live(zone, local_index)
+-        self.kmc.reprovision(terminal)
++        self.session.reprovision(terminal)
+         self.store.audit("重新灌装", f"台区 {zone} 序号 {local_index} 的管理种子按台区管控密钥重新导出，与原先一致")
+         return self.lookup(zone, local_index)
+ 
+diff --git a/grid_epoch/factory.py b/grid_epoch/factory.py
+index d80b526..1ff5d37 100644
+--- a/grid_epoch/factory.py
++++ b/grid_epoch/factory.py
+@@ -32,6 +32,18 @@ def main() -> None:
+                 terminal = _require(terminals, dropped, fields[1])
+                 terminal.apply(bytes.fromhex(fields[2]))
+                 sys.stdout.write(f"EPOCH {terminal.epoch}\n")
++            elif fields[0] == "REPROVISION" and len(fields) == 3:
++                from .device import open_provision
++                import hmac
++
++                terminal = _require(terminals, dropped, fields[1])
++                material = open_provision(terminal.device, bytes.fromhex(fields[2]))
++                if len(material) != 44 or material[:4] != b"GEMR" or int.from_bytes(material[4:12], "big") != terminal.tid:
++                    raise ProtocolError("重新灌装材料与终端不符")
++                if not hmac.compare_digest(material[12:], terminal.seed_mgmt):
++                    raise ProtocolError("重新导出的管理种子与原先不一致")
++                terminal.seed_mgmt = material[12:]
++                sys.stdout.write("SAME\n")
+             elif fields[0] == "PROOF" and len(fields) == 3:
+                 terminal = _require(terminals, dropped, fields[1])
+                 sys.stdout.write(f"PROOF {terminal.prove(bytes.fromhex(fields[2])).hex()}\n")
+diff --git a/grid_epoch/session.py b/grid_epoch/session.py
+index 4802bf9..4a79a7e 100644
+--- a/grid_epoch/session.py
++++ b/grid_epoch/session.py
+@@ -97,6 +97,20 @@ class ProvisionSession:
+         if reply != "OK":
+             raise _stated_failure(reply, "地市进程没有记下销毁")
+ 
++    def reprovision(self, terminal) -> None:
++        record = self.kmc.registry[terminal.tid]
++        if record.destroyed:
++            raise ProtocolError("终端已销毁")
++        if record.revoked or record.released:
++            raise ProtocolError("已吊销终端不能重新灌装")
++        self.city.send(f"REPROVISION {terminal.tid}")
++        reply = self.city.read()
++        if not reply.startswith("REPROVISION "):
++            raise _stated_failure(reply, "地市进程没有封装管理种子")
++        blob = reply.split()[1]
++        if terminal._ask(f"REPROVISION {terminal.tid} {blob}") != "SAME":
++            raise ProtocolError("产线没有核对重新灌装的管理种子")
++
+     def transfer(self, terminal, new_zone: int, new_local: int):
+         if self.kmc.registry[terminal.tid].destroyed:
+             raise ProtocolError("终端已销毁")
+diff --git a/tests/test_grid_epoch.py b/tests/test_grid_epoch.py
+index c5712a4..397c872 100644
+--- a/tests/test_grid_epoch.py
++++ b/tests/test_grid_epoch.py
+@@ -759,6 +759,34 @@ class ParallelUpdateTest(unittest.TestCase):
+ 
+ 
+ class DeskTest(unittest.TestCase):
++    def test_remote_reprovision_keeps_seed_and_epoch(self):
++        with tempfile.TemporaryDirectory() as directory:
++            desk = OperatorDesk(directory)
++            try:
++                self.assertTrue(all(row["behind"] for row in desk.zones(0)["zones"]))
++                desk.seal("甲", "乙")
++                desk.publish("甲", "乙")
++                desk.confirm_zone(42)
++                terminal = desk.terminals[(42, 0)]
++                challenge = os.urandom(16)
++                proof = terminal.prove(challenge)
++                epoch = terminal.epoch
++                desk.revoke_gateway(42)
++                result = desk.reprovision(42, 0)
++                self.assertEqual(result["local_index"], 0)
++                self.assertEqual(terminal.prove(challenge), proof)
++                self.assertEqual(terminal.epoch, epoch)
++                self.assertFalse(hasattr(terminal, "seed_mgmt"))
++                self.assertFalse(hasattr(terminal, "seed_biz"))
++                desk.revoke(42, 1)
++                with self.assertRaisesRegex(ProtocolError, "已吊销终端不能重新灌装"):
++                    desk.reprovision(42, 1)
++                desk.destroy_meter(42, 2)
++                with self.assertRaisesRegex(ProtocolError, "终端已销毁"):
++                    desk.reprovision(42, 2)
++            finally:
++                desk.close()
++
+     def test_registry_has_no_seeds_and_restore_needs_both_passwords(self):
+         with tempfile.TemporaryDirectory() as directory:
+             sink, offline = open_share_sink()
+@@ -821,9 +849,18 @@ class DeskTest(unittest.TestCase):
+             self.assertEqual([states[local] for local in (0, 2, 3)], ["已确认", "已确认", "已确认"])
+             desk.revoke(42, 1)
+             self.assertEqual(desk.status()["cover"], "子集差")
++            self.assertEqual(desk.zones(0)["zones"][0]["acked"], 3)
+             self.assertEqual({row["local"]: row["state"] for row in desk.members(42)}[1], "已吊销")
+             from grid_epoch.console import load_bench
+-            bench = load_bench()
++            bench_path = Path(directory) / "last_result.json"
++            bench_path.write_text(json.dumps({
++                "package_bytes": 236,
++                "gateway_package_bytes": 216,
++                "revocation_bytes": 118,
++                "confirm_bytes_per_zone": 62,
++                "confirm_update_seconds": 0.708,
++            }), encoding="utf-8")
++            bench = load_bench(bench_path)
+             self.assertEqual(
+                 set(bench),
+                 {"terminal", "gateway", "revocation", "confirm_bytes", "confirm_seconds"},
+@@ -937,6 +974,7 @@ class DeskTest(unittest.TestCase):
+             self.assertEqual(zone42["enrolled"], 2)
+             self.assertEqual(zone42["destroyed"], 1)
+             self.assertEqual(zone42["revoked"], 1)
++            self.assertLessEqual(zone42["acked"], zone42["enrolled"])
+             self.assertNotIn(record.leaf, desk.kmc.cohorts[1].terminals.revoked)
+             source = desk.terminals[(42, 0)]
+             source_tid = source.tid
+@@ -1172,6 +1210,9 @@ class BoundaryTest(unittest.TestCase):
+             self.assertEqual(row["leaf"], leaf)
+             self.assertEqual(row["destroyed"], 1)
+             desk.seal("甲", "乙")
++            with self.assertRaises(AuthFailed):
++                desk.publish("甲", "错误口令")
++            self.assertEqual(desk.status()["epoch"], 0)
+             desk.publish("甲", "乙")
+             self.assertIsNone(desk.kmc._escrow_passwords)
+             self.assertFalse(desk.kmc.verify_enrollment(watched.tid, os.urandom(16), b"\x00" * 64, 1))

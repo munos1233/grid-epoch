@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: test demo bench console split
+.PHONY: test demo bench console split scenes
 
 console:
 	$(PY) -m grid_epoch.console
@@ -13,6 +13,9 @@ test:
 
 demo:
 	$(PY) -m grid_epoch.demo
+
+scenes:
+	$(PY) -m grid_epoch.scenes run
 
 bench:
 	$(PY) bench/bench_scale.py

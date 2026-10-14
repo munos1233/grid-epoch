@@ -1,0 +1,198 @@
+[
+  {
+    "number": 1,
+    "file": "01-Safari_make_console_未发布_42-44_页脚.jpg",
+    "sha256": "b6888e67045054ed63d8ac5fdad46053034ee5b12e80bb7f3ef456992ee49a87",
+    "bytes": 487842,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 2,
+    "file": "02-Safari_make_console_发布纪元1_SM2通过_完全子树.jpg",
+    "sha256": "4d42e1d308fdf3d26a5d2bfb719c3d30813835ec9cac3ccb163a4f08657d4beb",
+    "bytes": 501877,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 3,
+    "file": "03-Safari_make_console_台区42四台确认_完成帧62字节.jpg",
+    "sha256": "b91a1c82c6d6232bba6702fb7268a8941b6394fa054920ed536d7b68e55df1f3",
+    "bytes": 520217,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 4,
+    "file": "04-Safari_make_console_错口令核对失败.jpg",
+    "sha256": "0b2b547a6612d1cd3a37ed7dde04ace0a2ec02e822217aac82b76cce785b0c57",
+    "bytes": 513168,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 5,
+    "file": "05-Safari_make_console_双人口令核对通过.jpg",
+    "sha256": "5c98c4d6ac64cc7e6aa2c1c725cc69e6d5f4191c222b09721e870f3e8d0964c7",
+    "bytes": 502612,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 6,
+    "file": "06-Safari_make_console_恢复纪元1托管_无随机数.jpg",
+    "sha256": "44627ee3e81a7f7240580f7ecd186bf8e7411a5fc4f4213d4318b420e11281d9",
+    "bytes": 502080,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 7,
+    "file": "07-Safari_make_console_丢弃过期随机数_纪元仍为1.jpg",
+    "sha256": "eab86e0688e82e5ed801fdc83aa270f34e9a5a931602c1b7ae82857b6305cc3d",
+    "bytes": 514003,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 8,
+    "file": "08-Safari_make_console_SM9接入核验通过_纪元不变.jpg",
+    "sha256": "be639ccdf1253754b6789f601672eb8bc332ec60cb6bcab2d8932d5f7d83257c",
+    "bytes": 509653,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 9,
+    "file": "09-Safari_make_console_扣下序号1_完成帧拒绝_未吊销.jpg",
+    "sha256": "4b5d7c265f1f94a30502f12e3d068853df19c8d23fcc6caf62d370961a6d5489",
+    "bytes": 519001,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 10,
+    "file": "10-Safari_make_console_吊销序号1_子集差_在册减少.jpg",
+    "sha256": "77bb0e39dd9ea2e818bce9f3cea195dab8eaabb456d9a4c0d86c36efa7b5a781",
+    "bytes": 508718,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 11,
+    "file": "11-Safari_make_console_观察名单_不参与验签.jpg",
+    "sha256": "004368cc511963a434d5f7f479dd9220be5a5ed84dca9c8c8fd9d016cf53e376",
+    "bytes": 530310,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 12,
+    "file": "12-Safari_make_console_换表_新序号4_新叶子4.jpg",
+    "sha256": "28324c4862363fe086ca670bc383e56047b7944adf96309aabbb2a21ade32b9d",
+    "bytes": 525885,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 13,
+    "file": "13-Safari_make_console_割接到台区45_新序号5.jpg",
+    "sha256": "45026437a9a0d12581bcca7aec3c7eb5499cd2304a5f1e811a752b5a2d605266",
+    "bytes": 523382,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 14,
+    "file": "14-Safari_make_console_销毁档案_叶子保留_在册减少.jpg",
+    "sha256": "11d9c0a37d205cdcf3d7c3cf67c84dc0e71fe5998ead50f8662335e6a1f86440",
+    "bytes": 523982,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 15,
+    "file": "15-Safari_make_console_查询已销毁终端_结果行已销毁.jpg",
+    "sha256": "19e5757f942e550b707e47ac4b972fc6e2a09637b1a817f585509d550ca68e47",
+    "bytes": 521929,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 16,
+    "file": "16-Safari_make_console_销毁后接入核验失败.jpg",
+    "sha256": "0eaa0626d4b6f3491c85913094695b6705b8d069561559068673b7945f4545f9",
+    "bytes": 517974,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 17,
+    "file": "17-Safari_make_console_销毁后重新灌装被拒绝.jpg",
+    "sha256": "a8e34e2aaeb4651f8c275bd67d6cbfd99f44e3e949a80fbb06f56e44f4c745ce",
+    "bytes": 518138,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 18,
+    "file": "18-Safari_make_console_归档审计_热表保留最新一条.jpg",
+    "sha256": "cc512a3d4e6e098d20f41b7084bae347b8d912d6f1d7f7fffc720562fd42a840",
+    "bytes": 497148,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 19,
+    "file": "19-Safari_make_console_吊销网关_管控密钥未轮换.jpg",
+    "sha256": "e8d14b6d0c0d622f793ba77614660bab61fa757f8c237363b39f1a04d00f8dfe",
+    "bytes": 508532,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 20,
+    "file": "20-Safari_make_console_在册终端重新灌装_管理种子一致.jpg",
+    "sha256": "329b9ac9b65625580b28b86e4b46f4ffacf5576494b8418cf3f806d31c2c2122",
+    "bytes": 522775,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 21,
+    "file": "21-Safari_make_console_最后召回固件1_四批次_子集差1条.jpg",
+    "sha256": "9868438959f50ea5b6c1ae20971ccc11ecaa0609db79dd80f7c6a543995e8013",
+    "bytes": 516675,
+    "capture": "macOS Safari 原生窗口 Computer Use 截图；裁掉顶部 180px 浏览器工具栏"
+  },
+  {
+    "number": 22,
+    "file": "22-Terminal_make_bench_完整输出_容量更新确认SM2对照.png",
+    "sha256": "b0b716c669da5df004a9a1e884b5131e850db25c3c0f023b98f02c177a365846",
+    "bytes": 1033704,
+    "capture": "用户在 macOS Terminal 中截图并发送；按序命名保存"
+  },
+  {
+    "number": 23,
+    "file": "23-Terminal_make_test_43项测试_末尾OK.png",
+    "sha256": "a21fcfd9778db1ec9089bf77b93b8636b7fc123c305a8d4e91fb05df618ad58b",
+    "bytes": 2293017,
+    "capture": "用户在 macOS Terminal 中截图并发送；按序命名保存"
+  },
+  {
+    "number": 24,
+    "file": "24-Terminal_make_demo_步骤1-3_纪元0分级认证加密.png",
+    "sha256": "4d6249dfbf78f0077e5547850299a06718043c7f7dca0edee1e9a4e341c3f083",
+    "bytes": 649341,
+    "capture": "用户在 macOS Terminal 中截图并发送；按序命名保存"
+  },
+  {
+    "number": 25,
+    "file": "25-Terminal_make_demo_步骤4_漏掉纪元1直达2.png",
+    "sha256": "fff8c5be7c30db620fc77780d9300dd0bd4641ed7754803be8ce1cfb79a1dd70",
+    "bytes": 249804,
+    "capture": "用户在 macOS Terminal 中截图并发送；按序命名保存"
+  },
+  {
+    "number": 26,
+    "file": "26-Terminal_make_split_步骤1_漏掉纪元1进入2.png",
+    "sha256": "b4d5dfc0eca9517102d85df9eee38e09b30eca9fbc472694a2521ba791ad6223",
+    "bytes": 87912,
+    "capture": "用户在 macOS Terminal 中截图并发送；按序命名保存"
+  },
+  {
+    "number": 27,
+    "file": "27-Terminal_make_split_步骤2吊销_步骤3换表.png",
+    "sha256": "9548c9c85fc925e15ef72c6282329225e0f7c390062721fcf32493edadc47303",
+    "bytes": 88617,
+    "capture": "用户在 macOS Terminal 中截图并发送；按序命名保存"
+  },
+  {
+    "number": 28,
+    "file": "28-Terminal_ps_aux_grep_grid_epoch_五进程同框.png",
+    "sha256": "2f8b938d91e17186f29722bc98f9979c90f9ed83ad1e23b46a42724e14ec3ea9",
+    "bytes": 784094,
+    "capture": "用户在 macOS Terminal 中截图并发送；按序命名保存"
+  }
+]

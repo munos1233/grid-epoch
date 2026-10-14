@@ -1,0 +1,49 @@
+.venv/bin/python -m unittest tests.test_grid_epoch -v
+test_bad_delegation_and_firmware_batch_and_zone_forward (tests.test_grid_epoch.BoundaryTest.test_bad_delegation_and_firmware_batch_and_zone_forward) ... ok
+test_city_and_factory_are_separate_processes (tests.test_grid_epoch.BoundaryTest.test_city_and_factory_are_separate_processes) ... ok
+test_county_key_and_sm9_stay_off_the_city (tests.test_grid_epoch.BoundaryTest.test_county_key_and_sm9_stay_off_the_city) ... ok
+test_escrow_archive_destroy_and_auth_frontier (tests.test_grid_epoch.BoundaryTest.test_escrow_archive_destroy_and_auth_frontier) ... ok
+test_leaf_quota_and_disjoint_firmware_batches (tests.test_grid_epoch.BoundaryTest.test_leaf_quota_and_disjoint_firmware_batches) ... ok
+test_either_share_alone_fails_the_published_key (tests.test_grid_epoch.CollaborativeSignTest.test_either_share_alone_fails_the_published_key) ... ok
+test_registry_has_no_seeds_and_restore_needs_both_passwords (tests.test_grid_epoch.DeskTest.test_registry_has_no_seeds_and_restore_needs_both_passwords) ... ok
+test_remote_reprovision_keeps_seed_and_epoch (tests.test_grid_epoch.DeskTest.test_remote_reprovision_keeps_seed_and_epoch) ... ok
+test_standard_sample_and_wrong_identity (tests.test_grid_epoch.EnrollmentTest.test_standard_sample_and_wrong_identity) ... ok
+test_small_parallel_update_matches_python (tests.test_grid_epoch.ParallelUpdateTest.test_small_parallel_update_matches_python) ... ok
+test_stream_ack_matches_python (tests.test_grid_epoch.ParallelUpdateTest.test_stream_ack_matches_python) ... ok
+test_aead_roundtrip_and_tamper (tests.test_grid_epoch.PrimitiveTest.test_aead_roundtrip_and_tamper) ... ok
+test_kdf_matches_native_batch_layout (tests.test_grid_epoch.PrimitiveTest.test_kdf_matches_native_batch_layout) ... ok
+test_sm3_and_sm4_vectors (tests.test_grid_epoch.PrimitiveTest.test_sm3_and_sm4_vectors) ... ok
+test_stream_xor_matches_python (tests.test_grid_epoch.PrimitiveTest.test_stream_xor_matches_python) ... ok
+test_administrative_cut_excludes_one_node (tests.test_grid_epoch.ProtocolTest.test_administrative_cut_excludes_one_node) ... ok
+test_city_node_does_not_carry_the_broadcast_root (tests.test_grid_epoch.ProtocolTest.test_city_node_does_not_carry_the_broadcast_root) ... ok
+test_completion_tag_uses_business_leaf (tests.test_grid_epoch.ProtocolTest.test_completion_tag_uses_business_leaf) ... ok
+test_conflicting_tag_drops_that_terminal (tests.test_grid_epoch.ProtocolTest.test_conflicting_tag_drops_that_terminal) ... ok
+test_dlt_services_map_without_parsing_frames (tests.test_grid_epoch.ProtocolTest.test_dlt_services_map_without_parsing_frames) ... ok
+test_drop_expired_nonce_and_time_era (tests.test_grid_epoch.ProtocolTest.test_drop_expired_nonce_and_time_era) ... ok
+test_epoch_jump_and_replay (tests.test_grid_epoch.ProtocolTest.test_epoch_jump_and_replay) ... ok
+test_epoch_zero_rejects_business (tests.test_grid_epoch.ProtocolTest.test_epoch_zero_rejects_business) ... ok
+test_gateway_capacity_follows_zone_count (tests.test_grid_epoch.ProtocolTest.test_gateway_capacity_follows_zone_count) ... ok
+test_gateway_revocation_replaces_slot_without_rotating_zone (tests.test_grid_epoch.ProtocolTest.test_gateway_revocation_replaces_slot_without_rotating_zone) ... ok
+test_graded_auth_and_encryption (tests.test_grid_epoch.ProtocolTest.test_graded_auth_and_encryption) ... ok
+test_replacement_keeps_neighbors_on_the_same_path_keys (tests.test_grid_epoch.ProtocolTest.test_replacement_keeps_neighbors_on_the_same_path_keys) ... ok
+test_revocation_excludes_terminal_and_keeps_others (tests.test_grid_epoch.ProtocolTest.test_revocation_excludes_terminal_and_keeps_others) ... ok
+test_services_nonces_and_city_boundary (tests.test_grid_epoch.ProtocolTest.test_services_nonces_and_city_boundary) ... ok
+test_slice_rejects_a_tampered_proof (tests.test_grid_epoch.ProtocolTest.test_slice_rejects_a_tampered_proof) ... ok
+test_stale_revocation_root_rejected (tests.test_grid_epoch.ProtocolTest.test_stale_revocation_root_rejected) ... ok
+test_tampered_signature_rejected (tests.test_grid_epoch.ProtocolTest.test_tampered_signature_rejected) ... ok
+test_transfer_rejects_the_old_leaf (tests.test_grid_epoch.ProtocolTest.test_transfer_rejects_the_old_leaf) ... ok
+test_withheld_completion_is_rejected_and_localized (tests.test_grid_epoch.ProtocolTest.test_withheld_completion_is_rejected_and_localized) ... ok
+test_zone_completion_is_checked_by_master (tests.test_grid_epoch.ProtocolTest.test_zone_completion_is_checked_by_master) ... ok
+test_cover_partitions_live_leaves (tests.test_grid_epoch.TreeTest.test_cover_partitions_live_leaves) ... ok
+test_cover_size_bound (tests.test_grid_epoch.TreeTest.test_cover_size_bound) ... ok
+test_empty_and_full_revocation (tests.test_grid_epoch.TreeTest.test_empty_and_full_revocation) ... ok
+test_full_block_uses_complete_subtree_and_scatter_uses_subset_difference (tests.test_grid_epoch.TreeTest.test_full_block_uses_complete_subtree_and_scatter_uses_subset_difference) ... ok
+test_hanging_labels_match_terminal_key_count_and_not_path_keys (tests.test_grid_epoch.TreeTest.test_hanging_labels_match_terminal_key_count_and_not_path_keys) ... ok
+test_internal_node_traces_only_its_subtree (tests.test_grid_epoch.TreeTest.test_internal_node_traces_only_its_subtree) ... ok
+test_single_revoke_at_million_scale_is_log (tests.test_grid_epoch.TreeTest.test_single_revoke_at_million_scale_is_log) ... ok
+test_subset_difference_partitions_live_leaves (tests.test_grid_epoch.TreeTest.test_subset_difference_partitions_live_leaves) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 18.067s
+
+OK

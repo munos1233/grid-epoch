@@ -1274,5 +1274,42 @@ def _contains(obj, needle: bytes, seen: set | None = None) -> bool:
     return False
 
 
+class SceneTimelineTest(unittest.TestCase):
+    def test_steps_follow_one_timeline(self):
+        from grid_epoch.scenes import STEPS, Story
+
+        story = Story()
+        try:
+            done = {}
+            for name, fn in STEPS:
+                done[name] = fn(story)
+        finally:
+            story.close()
+        self.assertTrue(done["epoch0"]["rejected"])
+        self.assertTrue(done["energy"]["business_rejected"])
+        self.assertTrue(done["energy"]["opened"])
+        self.assertTrue(done["control"]["gateway_opened"])
+        self.assertTrue(done["control"]["station_opened"])
+        self.assertEqual(done["jump"]["entered"], 2)
+        self.assertTrue(done["jump"]["old_rejected"])
+        self.assertEqual(done["publish"]["left_behind"], 0)
+        self.assertEqual(done["drop"]["epoch"], 2)
+        self.assertTrue(done["drop"]["epoch1_blocked"])
+        self.assertEqual(done["withhold"]["revoked"], 0)
+        self.assertEqual(done["withhold"]["missing_local"], 1)
+        self.assertEqual(done["confirm"]["bytes"], 62)
+        self.assertFalse(done["revoke"]["opened"])
+        self.assertEqual(done["revoke"]["cover"], "sd")
+        self.assertEqual(done["replace"]["local"], 4)
+        self.assertTrue(done["replace"]["path_same"])
+        self.assertEqual(story.terminals[4].epoch, done["replace"]["epoch"])
+        self.assertFalse(done["destroy"]["in_revoked"])
+        self.assertTrue(done["reject-enroll"]["rejected"])
+        self.assertTrue(done["reject-transfer"]["rejected"])
+        self.assertTrue(done["reject-reprovision"]["rejected"])
+        self.assertFalse(done["gateway"]["rotated"])
+        self.assertEqual(done["recall"]["cover"], "sd")
+
+
 if __name__ == "__main__":
     unittest.main()

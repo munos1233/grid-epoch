@@ -1,0 +1,114 @@
+[
+  {
+    "file": "screenshots/01-make-bench.png",
+    "source": "logs/make-bench.txt",
+    "source_sha256": "725e1f55ef6a8ddd1f0626ee11c3d6d541efd1361bd46879a0b2055ec6a64498",
+    "included_lines": [
+      ".venv/bin/python bench/bench_scale.py",
+      "机器 arm  线程 10",
+      "管理规模：10 万个台区 × 100 台 = 1000 万台，密钥流式派生、不落库",
+      "  用时 0.650 s   15,382,835 台/秒",
+      "并行更新：终端树 2^28，每台区 2048 槽，10 万台区，网关树 2^19。这一轮实际轮换 1000000 台",
+      "  省级组包 32.6 ms，含 3 次 SM2 协同签名：终端 236 字节，网关 216 字节，吊销根 118 字节",
+      "  单份终端报文 SM2 验签 5.50 ms（30 次平均，不放进百万循环）",
+      "  终端材料准备 0.069 s",
+      "  百万台对称更新模拟 1.361 s   734,895 台/秒",
+      "  分摊到每台约 13.6 µs CPU，只含打开 SM4 密文和派生两把工作密钥",
+      "  一台终端的换代开销是一次验签加这一次对称计算；上面的墙钟是主机把 100 万次叠在一起的模拟，不是系统时延",
+      "  百万台确认重算 0.708 s   1,413,182 台/秒，完成帧 62 字节",
+      "  千万台确认重算 7.288 s   1,372,188 台/秒",
+      "对照：逐台 SM2 加密下发，单次 5.0 ms，百万台约 1.4 小时",
+      "仓库参考测量：逐台 SM2 加密下发，百万台约 1.8 小时；本机实测以上一行为准",
+      "本机 4 个进程扇出派生 1000000 台，用时 0.161 s，6,202,534 台/秒。这是一台机器上的进程，不是地市广域网",
+      "结果已写入 bench/last_result.json"
+    ],
+    "note": "完整输出；数据来自这台机器的实测"
+  },
+  {
+    "file": "screenshots/02-make-test-ok.png",
+    "source": "logs/make-test.txt",
+    "source_sha256": "d7aa2a28fabce226420b3e72cb2b89c1bc0af16caff570b9c6772c8d24752fd9",
+    "included_lines": [
+      "test_cover_partitions_live_leaves (tests.test_grid_epoch.TreeTest.test_cover_partitions_live_leaves) ... ok",
+      "test_cover_size_bound (tests.test_grid_epoch.TreeTest.test_cover_size_bound) ... ok",
+      "test_empty_and_full_revocation (tests.test_grid_epoch.TreeTest.test_empty_and_full_revocation) ... ok",
+      "test_full_block_uses_complete_subtree_and_scatter_uses_subset_difference (tests.test_grid_epoch.TreeTest.test_full_block_uses_complete_subtree_and_scatter_uses_subset_difference) ... ok",
+      "test_hanging_labels_match_terminal_key_count_and_not_path_keys (tests.test_grid_epoch.TreeTest.test_hanging_labels_match_terminal_key_count_and_not_path_keys) ... ok",
+      "test_internal_node_traces_only_its_subtree (tests.test_grid_epoch.TreeTest.test_internal_node_traces_only_its_subtree) ... ok",
+      "test_single_revoke_at_million_scale_is_log (tests.test_grid_epoch.TreeTest.test_single_revoke_at_million_scale_is_log) ... ok",
+      "test_subset_difference_partitions_live_leaves (tests.test_grid_epoch.TreeTest.test_subset_difference_partitions_live_leaves) ... ok",
+      "",
+      "----------------------------------------------------------------------",
+      "Ran 43 tests in 18.067s",
+      "",
+      "OK"
+    ],
+    "note": "原始输出末尾；完整日志另存"
+  },
+  {
+    "file": "screenshots/07-make-demo-1-3.png",
+    "source": "logs/make-demo.txt",
+    "source_sha256": "b2c5c57adfecab995e049c3905faf5603cac81ed34756e72afedc80a6696d685",
+    "included_lines": [
+      ".venv/bin/python -m grid_epoch.demo",
+      "衍枢 GridEpoch  ·  海量配电终端批量密钥管理",
+      "区域 330100  台区 42  更新簇容量 16  已接入终端 4",
+      "省级签名公钥（SM2，前 32 位十六进制） fc55d33425976082b7b8bf29126e3a9a…",
+      "",
+      "1. 灌装纪元不能做业务：纪元 0 不能承载业务",
+      "   激活报文：终端 236 字节，网关 216 字节，吊销根 118 字节",
+      "2. 分级认证",
+      "   台区42-0号终端用认证密钥响应挑战，台区用管控种子重算校验：通过",
+      "3. 分级加密",
+      "   业务明文由终端业务密钥做 SM4 加密，台区只校验认证标签并加链路 MAC",
+      "   主站解开上行报文：Ua=10.21;Ub=10.18;Uc=10.20;Ia=15.4;status=ok",
+      "   台区尝试派生业务密钥：被拒绝（台区网关不持有业务域主密钥，不能派生业务密钥）",
+      ""
+    ],
+    "note": "原始输出节选：纪元 0、分级认证与分级加密"
+  },
+  {
+    "file": "screenshots/08-make-demo-4.png",
+    "source": "logs/make-demo.txt",
+    "source_sha256": "b2c5c57adfecab995e049c3905faf5603cac81ed34756e72afedc80a6696d685",
+    "included_lines": [
+      "4. 离线直达：漏掉纪元 1 后进入纪元 2，旧报文被拒绝（拒绝跳回已接受的纪元）"
+    ],
+    "note": "原始输出节选：离线直达"
+  },
+  {
+    "file": "screenshots/09-make-split-1.png",
+    "source": "logs/make-split.txt",
+    "source_sha256": "b6f6605f5bc9ad0164967727af59c204fdd6faff46418a8eee3b3cb1b70b4a5a",
+    "included_lines": [
+      ".venv/bin/python -m grid_epoch.split_demo",
+      "步骤1 漏掉纪元 1 后进入纪元 2"
+    ],
+    "note": "原始输出节选：漏掉纪元 1 后直达纪元 2"
+  },
+  {
+    "file": "screenshots/10-make-split-2-3.png",
+    "source": "logs/make-split.txt",
+    "source_sha256": "b6f6605f5bc9ad0164967727af59c204fdd6faff46418a8eee3b3cb1b70b4a5a",
+    "included_lines": [
+      "步骤2 吊销后 TerminalRevoked",
+      "步骤3 新表进入纪元 4，旧表 TerminalRevoked，漏收过纪元的邻表进入 4"
+    ],
+    "note": "原始输出节选：吊销与换表"
+  },
+  {
+    "file": "screenshots/11-five-processes.png",
+    "source": "logs/ps-grid-epoch.txt",
+    "source_sha256": "2b40f0090b9f8025fa4fa145d1c23ef2d6e80f7febf308594c8471ce6c6834b2",
+    "included_lines": [
+      "easonzhong       80629   0.0  0.0 435300352   1168   ??  R     8:16PM   0:00.00 grep grid_epoch",
+      "easonzhong       80626   0.0  0.0 435307936   2448   ??  Ss    8:16PM   0:00.01 /bin/zsh -lc ps aux | grep grid_epoch > evidence/logs/ps-grid-epoch.txt",
+      "easonzhong       80608   0.0  0.1 410983200  23952   ??  S     8:16PM   0:00.27 /Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python -m grid_epoch.factory",
+      "easonzhong       80607   0.0  0.1 410852128  23776   ??  S     8:16PM   0:00.30 /Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python -m grid_epoch.city_server",
+      "easonzhong       80606   0.0  0.1 410840464  19472   ??  S     8:16PM   0:00.02 /Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python -m grid_epoch.cosign_server",
+      "easonzhong       80605   0.0  0.1 410838016  17040   ??  S     8:16PM   0:00.02 /Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python -m grid_epoch.custodian",
+      "easonzhong       80604   0.0  0.1 411121664  30992   ??  S     8:16PM   0:00.41 /Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python -m grid_epoch.console"
+    ],
+    "note": "进程运行期间的原始 ps 输出；五个服务同时在列"
+  }
+]
