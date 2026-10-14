@@ -134,7 +134,6 @@
       <thead><tr><th>台区</th><th>在册</th><th>已确认</th><th>已吊销</th><th>已销毁</th><th>报文</th></tr></thead>
       <tbody id="zones"></tbody>
     </table>
-    <p class="note">已确认来自业务标签重算。报文未下发只说明这个台区还没收到纪元广播。观察名单只记这些台区，不表示确认失败。</p>
     <div class="pager">
       <button class="secondary" id="prev" type="button">上一页</button>
       <span>台区</span>
@@ -237,7 +236,7 @@ async function refresh() {
   lamps.innerHTML = cover + names.map(([key, label]) => lamp(label, status.packages && status.packages[key])).join("");
   const bench = status.bench;
   document.getElementById("bench").textContent = bench
-    ? `本机吞吐，不是端到端时延。报文 ${bench.terminal} / ${bench.gateway} / ${bench.revocation} 字节。完成帧 ${bench.confirm_bytes} 字节。100 万台确认重算 ${bench.confirm_seconds} 秒。`
+    ? `报文 ${bench.terminal} / ${bench.gateway} / ${bench.revocation} 字节。完成帧 ${bench.confirm_bytes} 字节。100 万台确认重算 ${bench.confirm_seconds} 秒。`
     : "";
   const zones = await api(`/api/zones?page=${state.page}&size=8`);
   state.total = zones.total;
